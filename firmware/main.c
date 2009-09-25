@@ -13,6 +13,14 @@
 // Comment out for instruments such as ASI
 //#define FULLCIRCLE
 
+// USB Commands
+#define CMD_ECHO				0
+#define CMD_SET1				1
+#define CMD_SET2				2
+#define CMD_GETID				7
+#define CMD_SETID				8
+#define CMD_RESET				9
+
 #define ENCODER1PORT             PORTC
 #define ENCODER1DDR              DDRC
 #define ENCODER1PIN              PINC
@@ -79,32 +87,33 @@ usbRequest_t    *rq = (void *)data;
 static uchar    replyBuf[8];
 
     usbMsgPtr = replyBuf;
-    if(rq->bRequest == 0){  /* ECHO */
+    if(rq->bRequest == CMD_ECHO){
         replyBuf[0] = rq->wValue.bytes[0];
         replyBuf[1] = rq->wValue.bytes[1];
         replyBuf[2] = rq->wValue.bytes[2];
         replyBuf[3] = rq->wValue.bytes[3];
         return 4;
-    } else if(rq->bRequest == 1){  /* CMD_SET */
+    } else if(rq->bRequest == CMD_SET1){
 		newposition1 = 0x0000;
 		newposition1 <<= 8;
         newposition1 |= rq->wValue.bytes[1];
 		newposition1 <<= 8;
         newposition1 |= rq->wValue.bytes[0];
+    } else if(rq->bRequest == CMD_SET2){
         newposition2 = 0x0000;
 		newposition2 <<= 8;
-        newposition2 |= rq->wValue.bytes[2];
+        newposition2 |= rq->wValue.bytes[1];
 		newposition2 <<= 8;
-        newposition2 |= rq->wValue.bytes[3];
-	} else if(rq->bRequest == 2){  /* CMD_GETID */
+        newposition2 |= rq->wValue.bytes[0];
+	} else if(rq->bRequest == CMD_GETID){
 		replyBuf[0] = eeprom_read_byte(EEPROM_ID_LOCATION);
 		replyBuf[1] = 3;
 		replyBuf[2] = 11;
 		return 3;
-	} else if(rq->bRequest == 3){  /* CMD_SETID */
+	} else if(rq->bRequest == CMD_SETID){
 		myID = rq->wValue.bytes[0];
 		eeprom_write_byte(EEPROM_ID_LOCATION, myID);
-    } else if(rq->bRequest == 9){  /* CMD_RESET */
+    } else if(rq->bRequest == CMD_RESET){
 		newposition1 = 0;
 		position1 = 0;
 		goHome1 = 2;
