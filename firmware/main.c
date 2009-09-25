@@ -248,7 +248,7 @@ SIGNAL (SIG_OUTPUT_COMPARE2)                // 1ms
 			if(testCount2 < MAXPOS)
 			{
 				testCount2++;
-				stepCounter21++;
+				stepCounter2++;
 				stepCounter2 &= 0x07;
             	MOTOR2PORT = motorPositions[stepCounter2] & MOTOR2MASK;
 			}
