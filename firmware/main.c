@@ -13,38 +13,44 @@
 // Comment out for instruments such as ASI
 //#define FULLCIRCLE
 
-// USB Commands
+// Uncomment to support second stepper motor, opto and encoder
+//#define MOTOR2
+
+#define ENCODER1PORT            PORTD
+#define ENCODER1DDR             DDRD
+#define ENCODER1PIN             PIND
+#define PHASE_A_1               (ENCODER1PIN & 1<<1)
+#define PHASE_B_1               (ENCODER1PIN & 1<<0)
+#define OPTO1PORT               PORTB
+#define OPTO1DDR                DDRB
+#define OPTO1PIN                PINB
+#define OPTO1                   (OPTO1PIN & 1<<3)
+#define MOTOR1PORT              PORTC
+#define MOTOR1DDR               DDRC
+#define MOTOR1MASK				0x0f
+
 #define CMD_ECHO				0
 #define CMD_SET1				1
 #define CMD_SET2				2
-#define CMD_GETID				7
-#define CMD_SETID				8
+#define CMD_GETID				3
+#define CMD_SETID				4
 #define CMD_RESET				9
 
-#define ENCODER1PORT             PORTC
-#define ENCODER1DDR              DDRC
-#define ENCODER1PIN              PINC
-#define ENCODER2PORT             PORTD
-#define ENCODER2DDR              DDRD
-#define ENCODER2PIN              PIND
-#define OPTO1PORT                PORTB
-#define OPTO1DDR                 DDRB
-#define OPTO1PIN                 PINB
-#define OPTO2PORT                PORTB
-#define OPTO2DDR                 DDRB
-#define OPTO2PIN                 PINB
-#define MOTOR1PORT               PORTC
-#define MOTOR1DDR                DDRC
-#define MOTOR1MASK               0x0f
-#define MOTOR2PORT               PORTD
-#define MOTOR2DDR                DDRD
-#define MOTOR2MASK               0xf0
-#define PHASE_A_1               (ENCODER1PIN & 1<<7)
-#define PHASE_B_1               (ENCODER1PIN & 1<<6)
-#define PHASE_A_2               (ENCODER2PIN & 1<<7)
-#define PHASE_B_2               (ENCODER2PIN & 1<<6)
-#define OPTO1                   (OPTO1PIN & 1<<2)
-#define OPTO2                   (OPTO2PIN & 1<<2)
+#ifdef MOTOR2
+#define ENCODER2PORT            PORTD
+#define ENCODER2DDR             DDRD
+#define ENCODER2PIN             PIND
+#define PHASE_A_2               (ENCODER2PIN & 1<<1)
+#define PHASE_B_2               (ENCODER2PIN & 1<<0)
+#define OPTO2PORT               PORTB
+#define OPTO2DDR                DDRB
+#define OPTO2PIN                PINB
+#define OPTO2                   (OPTO2PIN & 1<<3)
+#define MOTOR2PORT              PORTC
+#define MOTOR2DDR               DDRC
+#define MOTOR2MASK				0x0f
+#endif
+
 #define FORWARD                 0
 #define REVERSE                 1
 #define HALFWAY					199
@@ -53,33 +59,36 @@
 
 // positions for half stepping bipolar
 static char motorPositions[8] = {
-    0x99,   // 1 0 0 1  1 0 0 1
-    0x11,   // 0 0 0 1  0 0 0 1
-    0x55,   // 0 1 0 1  0 1 0 1
-    0x44,   // 0 1 0 0  0 1 0 0
-    0x66,   // 0 1 1 0  0 1 1 0
-    0x22,   // 0 0 1 0  0 0 1 0
-    0xaa,   // 1 0 1 0  1 0 1 0
-    0x88    // 1 0 0 0  1 0 0 0
+    0x09,   // 0 0 0 0  1 0 0 1
+    0x01,   // 0 0 0 0  0 0 0 1
+    0x05,   // 0 0 0 0  0 1 0 1
+    0x04,   // 0 0 0 0  0 1 0 0
+    0x06,   // 0 0 0 0  0 1 1 0
+    0x02,   // 0 0 0 0  0 0 1 0
+    0x0a,   // 0 0 0 0  1 0 1 0
+    0x08    // 0 0 0 0  1 0 0 0
 };
 
 static int16_t last1;
-static int16_t last2;
 static int16_t position1 = 0;
-static int16_t position2 = 0;
 static int16_t newposition1 = 0;
-static int16_t newposition2 = 0;
 static int8_t mtr_direction1 = REVERSE;
-static int8_t mtr_direction2 = REVERSE;
 static int16_t stepCounter1 = 0;
-static int16_t stepCounter2 = 0;
 static int16_t mtr_delta1 = 0x0000;
-static int16_t mtr_delta2 = 0x0000;
 static int8_t goHome1 = 0x02;
-static int8_t goHome2 = 0x02;
 static int16_t testCount1 = 0;
-static int16_t testCount2 = 0;
 static int8_t myID = -1;
+
+#ifdef MOTOR2
+static int16_t last2;
+static int16_t position2 = 0;
+static int16_t newposition2 = 0;
+static int8_t mtr_direction2 = REVERSE;
+static int16_t stepCounter2 = 0;
+static int16_t mtr_delta2 = 0x0000;
+static int8_t goHome2 = 0x02;
+static int16_t testCount2 = 0;
+#endif
 
 USB_PUBLIC uchar usbFunctionSetup(uchar data[8])
 {
@@ -90,21 +99,21 @@ static uchar    replyBuf[8];
     if(rq->bRequest == CMD_ECHO){
         replyBuf[0] = rq->wValue.bytes[0];
         replyBuf[1] = rq->wValue.bytes[1];
-        replyBuf[2] = rq->wValue.bytes[2];
-        replyBuf[3] = rq->wValue.bytes[3];
-        return 4;
+        return 2;
     } else if(rq->bRequest == CMD_SET1){
 		newposition1 = 0x0000;
 		newposition1 <<= 8;
         newposition1 |= rq->wValue.bytes[1];
 		newposition1 <<= 8;
         newposition1 |= rq->wValue.bytes[0];
-    } else if(rq->bRequest == CMD_SET2){
-        newposition2 = 0x0000;
+#ifdef MOTOR2
+	} else if(rq->bRequest == CMD_SET2){
+		newposition2 = 0x0000;
 		newposition2 <<= 8;
         newposition2 |= rq->wValue.bytes[1];
 		newposition2 <<= 8;
         newposition2 |= rq->wValue.bytes[0];
+#endif
 	} else if(rq->bRequest == CMD_GETID){
 		replyBuf[0] = eeprom_read_byte(EEPROM_ID_LOCATION);
 		replyBuf[1] = 3;
@@ -117,16 +126,13 @@ static uchar    replyBuf[8];
 		newposition1 = 0;
 		position1 = 0;
 		goHome1 = 2;
-        newposition2 = 0;
-		position2 = 0;
-		goHome2 = 2;
 	}
     return 0;
 }
 
 SIGNAL (SIG_OUTPUT_COMPARE2)                // 1ms
 {
-    int16_t new1, diff1, new2, diff2;
+    int16_t new1, diff1;
 
     new1 = 0;
     if( PHASE_A_1 )
@@ -138,10 +144,13 @@ SIGNAL (SIG_OUTPUT_COMPARE2)                // 1ms
         last1 = new1;                       // store new as next last
 		position1 += (diff1 & 2) - 1;		// update position1
     }
-    
+
+#ifdef MOTOR2
+	int16_t new2, diff2;
+
     new2 = 0;
     if( PHASE_A_2 )
-        new1 = 3;
+        new2 = 3;
     if( PHASE_B_2 )
         new2 ^= 1;                          // convert gray to binary
     diff2 = last2 - new2;                   // difference last - new
@@ -149,6 +158,7 @@ SIGNAL (SIG_OUTPUT_COMPARE2)                // 1ms
         last2 = new2;                       // store new as next last
 		position2 += (diff2 & 2) - 1;		// update position1
     }
+#endif
 
     if(goHome1 > 0)
     {
@@ -249,7 +259,8 @@ SIGNAL (SIG_OUTPUT_COMPARE2)                // 1ms
             MOTOR1PORT = motorPositions[stepCounter1] & MOTOR1MASK;
         }
     }
-    
+
+#ifdef MOTOR2
     if(goHome2 > 0)
     {
 		if(goHome2 == 3) // test mode
@@ -349,30 +360,7 @@ SIGNAL (SIG_OUTPUT_COMPARE2)                // 1ms
             MOTOR2PORT = motorPositions[stepCounter2] & MOTOR2MASK;
         }
     }
-
-}
-
-void hardwareInit(void)
-{
-    TCCR0 = 5;          /* set prescaler to 1/1024 */
-	TCNT2 = 0x00; /* Timer 2: Reset counter (periodic timer) */
-	TCCR2 = 0x0f; /* Clock / 1024, clear after compare match (CTC) */
-	OCR2 = 0x0b;
-	TIMSK |= _BV(OCIE2);
-
-    // set input pins
-    DDRB &= ~_BV(PB3|PB4);
-    DDRC &= ~_BV(PC4|PC5);
-    DDRD &= ~_BV(PD0|PD1|PD3);
-    
-    // enable pullups    
-    PORTB |= _BV(PB3|PB4);
-    PORTC |= _BV(PC4|PC5);
-    PORTD |= _BV(PD0|PD1);
-
-    // set outputs
-    DDRC |= _BV(PC0|PC1|PC2|PC3);
-    DDRD |= _BV(PD4|PD5|PD6|PD7);
+#endif
 }
 
 int main(void)
@@ -397,9 +385,23 @@ int main(void)
         _delay_ms(2);
     }
     usbDeviceConnect();
+    TCCR0 = 5;          /* set prescaler to 1/1024 */
     usbInit();
-    
-    hardwareInit();
+
+	DDRB &= ~(_BV(PB3));
+	PORTB |= _BV(PB3);
+	
+	DDRD &= ~(_BV(PD0)|_BV(PD1));
+	PORTD |= (_BV(PD0)|_BV(PD1));
+
+	TCNT2 = 0x00; /* Timer 2: Reset counter (periodic timer) */
+	TCCR2 = 0x0f; /* Clock / 1024, clear after compare match (CTC) */
+	OCR2 = 0x0b;
+
+	TIMSK |= _BV(OCIE2);
+
+	DDRC = 0x2f;
+	PORTC = 0x2f;
 
 	myID = eeprom_read_byte(EEPROM_ID_LOCATION);
 
@@ -410,4 +412,3 @@ int main(void)
     }
     return 0;
 }
-
