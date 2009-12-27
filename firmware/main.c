@@ -32,8 +32,8 @@
 #define CMD_ECHO				0
 #define CMD_SET1				1
 #define CMD_SET2				2
-#define CMD_GETID				3
-#define CMD_SETID				4
+#define CMD_GET_TABLE			3
+#define CMD_SET_TABLE			4
 #define CMD_RESET				9
 
 #ifdef MOTOR2
@@ -55,7 +55,9 @@
 #define REVERSE                 1
 #define HALFWAY					199
 #define MAXPOS					399
-#define EEPROM_ID_LOCATION		0
+#define EEPROM_SERIAL_LOCATION	0
+#define EEPROM_TABLE_LOCATION	8
+#define EEPROM_TABLE_SIZE		16
 
 // positions for half stepping bipolar
 static char motorPositions[8] = {
@@ -77,7 +79,6 @@ static int16_t stepCounter1 = 0;
 static int16_t mtr_delta1 = 0x0000;
 static int8_t goHome1 = 0x02;
 static int16_t testCount1 = 0;
-static int8_t myID = -1;
 
 #ifdef MOTOR2
 static int16_t last2;
@@ -89,6 +90,15 @@ static int16_t mtr_delta2 = 0x0000;
 static int8_t goHome2 = 0x02;
 static int16_t testCount2 = 0;
 #endif
+
+#define SERIAL_NUMBER_LENGTH 1
+static int  serialNumberDescriptor[SERIAL_NUMBER_LENGTH + 1];
+
+static void SetSerial(void)
+{
+   serialNumberDescriptor[0] = USB_STRING_DESCRIPTOR_HEADER(SERIAL_NUMBER_LENGTH);
+   serialNumberDescriptor[1] = eeprom_read_byte(EEPROM_SERIAL_LOCATION);
+}
 
 USB_PUBLIC uchar usbFunctionSetup(uchar data[8])
 {
@@ -114,20 +124,31 @@ static uchar    replyBuf[8];
 		newposition2 <<= 8;
         newposition2 |= rq->wValue.bytes[0];
 #endif
-	} else if(rq->bRequest == CMD_GETID){
-		replyBuf[0] = eeprom_read_byte(EEPROM_ID_LOCATION);
-		replyBuf[1] = 3;
-		replyBuf[2] = 11;
-		return 3;
-	} else if(rq->bRequest == CMD_SETID){
-		myID = rq->wValue.bytes[0];
-		eeprom_write_byte(EEPROM_ID_LOCATION, myID);
-    } else if(rq->bRequest == CMD_RESET){
+    } else if(rq->bRequest == CMD_GET_TABLE){
+		for(uchar i = 0; i < 8; i++){
+			replyBuf[i] = eeprom_read_byte(EEPROM_TABLE_LOCATION + (rq->wValue.bytes[0] * 8) + i);
+		}
+		return 8;
+    } else if(rq->bRequest == CMD_SET_TABLE){
+		eeprom_write_byte(EEPROM_TABLE_LOCATION + (rq->wValue.bytes[0] * 8) + (rq->wValue.bytes[1]), rq->wIndex.bytes[0]);
+	} else if(rq->bRequest == CMD_RESET){
 		newposition1 = 0;
 		position1 = 0;
 		goHome1 = 2;
-	}
+    }
     return 0;
+}
+
+uchar usbFunctionDescriptor(usbRequest_t *rq)
+{
+   uchar len = 0;
+   usbMsgPtr = 0;
+   if (rq->wValue.bytes[1] == USBDESCR_STRING && rq->wValue.bytes[0] == 3)
+   {
+      usbMsgPtr = (uchar*)serialNumberDescriptor;
+      len = sizeof(serialNumberDescriptor);
+   }
+   return len;
 }
 
 SIGNAL (SIG_OUTPUT_COMPARE2)                // 1ms
@@ -367,6 +388,8 @@ int main(void)
 {
 	uchar   i;
 
+	SetSerial();
+
     wdt_enable(WDTO_1S);
     odDebugInit();
     DDRD = ~(1 << 2);   /* all outputs except PD2 = INT0 */
@@ -402,8 +425,6 @@ int main(void)
 
 	DDRC = 0x2f;
 	PORTC = 0x2f;
-
-	myID = eeprom_read_byte(EEPROM_ID_LOCATION);
 
     sei();
     for(;;){    /* main event loop */
