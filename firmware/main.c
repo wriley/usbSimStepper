@@ -32,9 +32,17 @@
 #define CMD_ECHO				0
 #define CMD_SET1				1
 #define CMD_SET2				2
-#define CMD_GET_TABLE			3
-#define CMD_SET_TABLE			4
-#define CMD_RESET				9
+#define CMD_GET_TABLE			10
+#define CMD_SET_TABLE			11
+#define CMD_GET_TABLERAW		20
+#define CMD_SET_TABLERAW		21
+#ifdef MOTOR2
+#define CMD_GET_TABLE2			30
+#define CMD_SET_TABLE2			31
+#define CMD_GET_TABLERAW2		40
+#define CMD_SET_TABLERAW2		41
+#endif
+#define CMD_RESET				99
 
 #ifdef MOTOR2
 #define ENCODER2PORT            PORTD
@@ -56,8 +64,13 @@
 #define HALFWAY					199
 #define MAXPOS					399
 #define EEPROM_SERIAL_LOCATION	0
-#define EEPROM_TABLE_LOCATION	8
-#define EEPROM_TABLE_SIZE		16
+
+#define EEPROM_TABLE_LOCATION		8
+#define EEPROM_TABLERAW_LOCATION	72
+#ifdef MOTOR2
+#define EEPROM_TABLE2_LOCATION		136
+#define EEPROM_TABLERAW2_LOCATION	200
+#endif
 
 // positions for half stepping bipolar
 static char motorPositions[8] = {
@@ -131,6 +144,29 @@ static uchar    replyBuf[8];
 		return 8;
     } else if(rq->bRequest == CMD_SET_TABLE){
 		eeprom_write_byte(EEPROM_TABLE_LOCATION + (rq->wValue.bytes[0] * 8) + (rq->wValue.bytes[1]), rq->wIndex.bytes[0]);
+	} else if(rq->bRequest == CMD_GET_TABLERAW){
+		for(uchar i = 0; i < 8; i++){
+			replyBuf[i] = eeprom_read_byte(EEPROM_TABLERAW_LOCATION + (rq->wValue.bytes[0] * 8) + i);
+		}
+		return 8;
+    } else if(rq->bRequest == CMD_SET_TABLERAW){
+		eeprom_write_byte(EEPROM_TABLERAW_LOCATION + (rq->wValue.bytes[0] * 8) + (rq->wValue.bytes[1]), rq->wIndex.bytes[0]);
+#ifdef MOTOR2
+    } else if(rq->bRequest == CMD_GET_TABLE2){
+		for(uchar i = 0; i < 8; i++){
+			replyBuf[i] = eeprom_read_byte(EEPROM_TABLE2_LOCATION + (rq->wValue.bytes[0] * 8) + i);
+		}
+		return 8;
+    } else if(rq->bRequest == CMD_SET_TABLE2){
+		eeprom_write_byte(EEPROM_TABLE2_LOCATION + (rq->wValue.bytes[0] * 8) + (rq->wValue.bytes[1]), rq->wIndex.bytes[0]);
+	} else if(rq->bRequest == CMD_GET_TABLERAW2){
+		for(uchar i = 0; i < 8; i++){
+			replyBuf[i] = eeprom_read_byte(EEPROM_TABLERAW2_LOCATION + (rq->wValue.bytes[0] * 8) + i);
+		}
+		return 8;
+    } else if(rq->bRequest == CMD_SET_TABLERAW2){
+		eeprom_write_byte(EEPROM_TABLERAW2_LOCATION + (rq->wValue.bytes[0] * 8) + (rq->wValue.bytes[1]), rq->wIndex.bytes[0]);
+#endif
 	} else if(rq->bRequest == CMD_RESET){
 		newposition1 = 0;
 		position1 = 0;
