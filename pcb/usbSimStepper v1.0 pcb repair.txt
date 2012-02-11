@@ -1,0 +1,12 @@
+usbSimStepper v1.0 PCB error repair notes
+
+Reference image "usbSimStepper v1.0 pcb repair 1.jpg" for steps A, B, and C.
+A) The USB connector shields are not tied to GND (bottom plane).
+   Connect either shield connection to any convenient GND location
+
+B) The GND pin on the ISP connector (2x3-pin header) is not tied to GND (bottom plane).
+   Connect pin 6 to any convenient GND location
+
+C) Resistor R4 is tied to GND (bottom plane) instead of Vcc (top plane).
+   Do not solder the end of R4 marked with red X, instead connect that end to any
+   convenient Vcc location.
