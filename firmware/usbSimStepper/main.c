@@ -42,6 +42,7 @@
 #define CMD_GET_TABLERAW2		40
 #define CMD_SET_TABLERAW2		41
 #endif
+#define CMD_SET_SERIAL			90
 #define CMD_RESET				99
 
 #ifdef MOTOR2
@@ -109,8 +110,15 @@ static int  serialNumberDescriptor[SERIAL_NUMBER_LENGTH + 1];
 
 static void SetSerial(void)
 {
-   serialNumberDescriptor[0] = USB_STRING_DESCRIPTOR_HEADER(SERIAL_NUMBER_LENGTH);
-   serialNumberDescriptor[1] = eeprom_read_byte(EEPROM_SERIAL_LOCATION);
+	serialNumberDescriptor[0] = USB_STRING_DESCRIPTOR_HEADER(SERIAL_NUMBER_LENGTH);
+	
+	uint8_t serial = eeprom_read_byte(EEPROM_SERIAL_LOCATION);
+	if(serial == 0xff)
+	{
+		//assume it's unset and set to 0
+		serial = 0x30;
+	}
+	serialNumberDescriptor[1] = serial;
 }
 
 USB_PUBLIC uchar usbFunctionSetup(uchar data[8])
@@ -167,6 +175,13 @@ static uchar    replyBuf[8];
     } else if(rq->bRequest == CMD_SET_TABLERAW2){
 		eeprom_write_byte(EEPROM_TABLERAW2_LOCATION + (rq->wValue.bytes[0] * 8) + (rq->wValue.bytes[1]), rq->wIndex.bytes[0]);
 #endif
+	} else if(rq->bRequest == CMD_SET_SERIAL){
+		serialNumberDescriptor[1] = rq->wValue.bytes[0] + 48;
+		eeprom_write_byte(EEPROM_SERIAL_LOCATION, (uint8_t)serialNumberDescriptor[1]);
+		replyBuf[0] = rq->wValue.bytes[0];
+        replyBuf[1] = rq->wValue.bytes[1];
+		replyBuf[2] = serialNumberDescriptor[1];
+        return 3;
 	} else if(rq->bRequest == CMD_RESET){
 		newposition1 = 0;
 		position1 = 0;
