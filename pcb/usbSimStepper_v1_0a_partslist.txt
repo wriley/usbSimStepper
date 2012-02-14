@@ -1,0 +1,51 @@
+Partlist
+
+Exported from usbSimStepper_v1_0a.brd at 2/13/2012 9:21:40 PM
+
+EAGLE Version 6.1.0 Copyright (c) 1988-2012 CadSoft
+
+Assembly variant: 
+
+Part     Value          Package            Library  Position (inch)       Orientation
+
+C1       22pf           CAP-PTH-SMALL2     SparkFun (1.9 0.675)           R180
+C2       22pf           CAP-PTH-SMALL2     SparkFun (2.1 0.675)           R0
+C3       .1             CAP-PTH-SMALL2     SparkFun (1.8 1.5)             R90
+C4       .1             CAP-PTH-SMALL2     SparkFun (2.8 2)               R0
+C5       .1             CAP-PTH-SMALL2     SparkFun (1.2 2)               R0
+D2       3V3            DIODE-ZENER        SparkFun (1.1 0.4)             R180
+D3       3V3            DIODE-ZENER        SparkFun (2.1 0.45)            R0
+IC1      ATMEGA8        DIL28-3            SparkFun (1.65 1.2)            R0
+IC2      L293D          DIL16              sgs-thom (0.85 2.25)           R0
+IC3      L293D          DIL16              sgs-thom (2.45 2.25)           R0
+JP1      ISP            2X3-NS             SparkFun (2.85 1.2)            R270
+JP2      MOTOR          MOLEX-1X2          SparkFun (1.6 2.35)            R0
+JP3      ENCODER1       MOLEX-1X3          SparkFun (1.1 1.6)             R180
+JP4      ENCODER2       MOLEX-1X3          SparkFun (0.9 0.8)             R0
+JP5      ENCODERSW      MOLEX-1X2          SparkFun (1.45 0.75)           R0
+JP6      MOTOR1         MOLEX-1X4          SparkFun (1.2 2.75)            R90
+JP7      MOTOR2         MOLEX-1X4          SparkFun (2 2.75)              R90
+JP8      LIMIT1         MOLEX-1X3          SparkFun (2.25 1.8)            R0
+JP9      LIMIT2         MOLEX-1X3          SparkFun (2.7 1.8)             R0
+LED1     PWR            LED5MM             SparkFun (0.45 1.7)            R0
+LED2     MPWR           LED5MM             SparkFun (0.45 2.7)            R180
+Q1       12MHz          HC49US             SparkFun (2 0.85)              R0
+R1       68             0204/7             resistor (1.25 0.75)           R270
+R2       68             0204/7             resistor (2.5 1.2)             R90
+R3       1K5            0204/7             resistor (2.35 1.5)            R0
+R4       1M             0204/7             resistor (1.1 0.5)             R180
+R5       150            0204/7             resistor (0.35 1.9)            R0
+R6       150            0204/7             resistor (0.55 2.9)            R180
+R7       10K            0204/7             resistor (1.7 1.6)             R270
+R8       10K            0204/7             resistor (0.85 1.2)            R90
+R9       10K            0204/7             resistor (1.55 0.925)          R0
+R10      10K            0204/7             resistor (0.35 2.25)           R90
+R11      10K            0204/7             resistor (1.35 2.25)           R90
+R12      150            0204/7             resistor (2.4 1.6)             R0
+R13      10K            0204/7             resistor (1.95 2.25)           R90
+R14      10K            0204/7             resistor (2.95 2.25)           R90
+R15      1K             0204/7             resistor (2.1 1.6)             R90
+R16      150            0204/7             resistor (2.85 1.6)            R0
+R17      1K             0204/7             resistor (2 1.6)               R90
+S1       RESET          TACTILE-PTH        SparkFun (0.45 1.2)            R90
+X1       USB            USB-B-PTH-VERTICAL SparkFun (1.4 0.05)            R0
