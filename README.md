@@ -9,8 +9,8 @@ This is a half-finished project I started several years ago for a flight simulat
 
 
 Relevant blog posts
-http://workbench.freetcp.com/archives/549
-http://workbench.freetcp.com/archives/555
-http://workbench.freetcp.com/archives/571
-http://workbench.freetcp.com/archives/739
-http://workbench.freetcp.com/archives/745
+* http://workbench.freetcp.com/archives/549
+* http://workbench.freetcp.com/archives/555
+* http://workbench.freetcp.com/archives/571
+* http://workbench.freetcp.com/archives/739
+* http://workbench.freetcp.com/archives/745
