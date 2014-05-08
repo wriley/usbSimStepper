@@ -1,13 +1,11 @@
 usbSimStepper
 =============
 
-This is a half-finished project I started several years ago for a flight simulator panel. It is a USB driver board
-for 1-2 stepper motors built for instruments from Mike Powell's book Building Simulated Aircraft Instrumentation *1. Windows
-programs, such as usbSimCentral *2, can interface with this board via a DLL *3.
+This is a half-finished project I started several years ago for a flight simulator panel. It is a USB driver board for 1-2 stepper motors built for instruments from Mike Powell's book Building Simulated Aircraft Instrumentation<sup>1</sup>. Windows programs, such as usbSimCentral<sup>2</sup>, can interface with this board via a DLL<sup>3</sup>.
 
-[1] http://www.mikesflightdeck.com/mfdb/bsai/bsai.html
-[2] https://github.com/wriley/usbSimCentral
-[3] https://github.com/wriley/usbSimInstrument
+1. http://www.mikesflightdeck.com/mfdb/bsai/bsai.html
+2. https://github.com/wriley/usbSimCentral
+3. https://github.com/wriley/usbSimInstrument
 
 
 Relevant blog posts
